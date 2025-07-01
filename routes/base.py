@@ -5,5 +5,5 @@ base_router = APIRouter()
 @base_router.get('/')
 def welcome() :
     return {
-        "message": "hello world"
+        "message": "Hello All"
     }
