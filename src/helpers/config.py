@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+from functools import lru_cache
 class Settings(BaseSettings):
 
     APP_NAME: str
@@ -15,5 +15,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
+@lru_cache(maxsize=1) # make it cache only one in order to make a singleton class 
 def get_settings():
     return Settings()
