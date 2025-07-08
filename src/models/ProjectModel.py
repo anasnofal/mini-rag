@@ -7,8 +7,8 @@ class ProjectModel(BaseDataModel):
         self.collection = self.db_client[DataBaseEnum.COLLECTION_PROJECT_NAME.value]
 
     async def create_project(self, project : Project):
-        result = await self.collection.insert_one(project.dict())
-        project.id = result.inserted_id
+        result = await self.collection.insert_one(project.dict(by_alias=True, exclude_unset=True))
+        project._id = result.inserted_id
         return project
     
     async def get_project_or_create_one(self, project_id:str):
@@ -21,7 +21,7 @@ class ProjectModel(BaseDataModel):
             project = await self.create_project(project=project)
             return project
         
-        return project(**record)
+        return Project(**record)
     async def get_all_projects(self, page: int=1, page_size:int=10):
 
         #count total number of documents

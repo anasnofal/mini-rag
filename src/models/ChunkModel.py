@@ -10,12 +10,12 @@ class ChunkModel(BaseDataModel):
         self.collection = self.db_client[DataBaseEnum.COLLECTION_CHUNK_NAME.value]
 
     async def create_project(self, Chunk : DataChunk):
-        result = await self.collection.insert_one(Chunk.dict())
+        result = await self.collection.insert_one(Chunk.dict(by_alias=True, exclude_unset=True))
         Chunk.id = result.inserted_id
         return Chunk
     async def get_chunk(self, chunk_id: str):
         result = await self.collection.find_one({
-            "id":ObjectId(chunk_id)
+            "_id":ObjectId(chunk_id)
         })
         if result is None:
             return None
@@ -26,8 +26,13 @@ class ChunkModel(BaseDataModel):
         for i  in range(0,len(chunks),batch_size):
             batch = chunks[i:i+batch_size]
             operations = [
-                InsertOne(chunk.dict())
+                InsertOne(chunk.dict(by_alias=True, exclude_unset=True))
                 for chunk in batch
             ]
             await self.collection.bulk_write(operations)
             return len(chunks)
+    async def delete_chunks_by_project_id(self,project_id:ObjectId):
+        result = await self.collection.delete_many({
+            "chunk_project_id":project_id
+        })
+        return result.deleted_count
