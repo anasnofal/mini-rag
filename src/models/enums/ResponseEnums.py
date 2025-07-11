@@ -7,3 +7,6 @@ class ResponseResult(Enum):
     FILE_UPLOAD_FAILED = "file_upload_failed"
     PROCESSING_FAILED = "processing_failed"
     PROCESSING_SUCCESS = "processing_success" 
+    NO_FILES_FOUND = "no_files_found"
+    CHUNK_CREATION_SUCCESS = "chunk_creation_success"
+    FILE_ID_ERROR = "file_id_error"
