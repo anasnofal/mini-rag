@@ -1,5 +1,5 @@
 from ..LLMInterface import LLMInterface
-from ..LLMEnums import LLMEnums, GeminiEnums, DocumentTypeEnum
+from ..LLMEnums import DocumentTypeEnumGemini, LLMEnums, GeminiEnums, DocumentTypeEnum
 from google import genai
 from google.genai import types
 import logging
@@ -95,7 +95,7 @@ class GeminiProvider(LLMInterface):
             role=role, parts=[types.Part(text=self.process_text(prompt))]
         )
 
-    def embed_text(self, text: str, document_type: str = "retrieval_document") -> list:
+    def embed_text(self, text: str, document_type: str) -> list:
         """Generate embeddings for the provided text."""
         if not self.client:
             self.logger.error("Gemini client is not initialized.")
@@ -103,6 +103,8 @@ class GeminiProvider(LLMInterface):
         if not self.embedding_model_id:
             self.logger.error("Embedding model for Gemini is not set.")
             return None
+        if document_type == DocumentTypeEnum.DOCUMENT.value:
+            document_type = DocumentTypeEnumGemini.RETRIEVAL_DOCUMENT.value
         response = self.client.models.embed_content(
             model=self.embedding_model_id,
             contents=self.process_text(text),

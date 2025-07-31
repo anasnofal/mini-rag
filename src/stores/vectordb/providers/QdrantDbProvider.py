@@ -1,11 +1,12 @@
 from curses import meta
 from os import path
-import re
-from turtle import mode
+from unittest import result
 from stores.vectordb.VectorDBEnums import DistanceMetricEnums
 from ..VectorDBInterface import VectorDBInterface
 from qdrant_client import QdrantClient, models
 from typing import List
+import uuid
+from models.db_schemes import RetrievedDocument
 import logging
 
 
@@ -82,11 +83,14 @@ class QdrantDbProvider(VectorDBInterface):
         if not vector or len(vector) == 0:
             self.logger.error("Vector is empty or not provided.")
             return False
+        if record_id is None:
+            record_id = str(uuid.uuid4())
         try:
             _ = self.client.upsert(
                 collection_name=collection_name,
-                records=[
-                    models.Point(
+                points=[
+                    models.PointStruct(
+                        id=record_id,
                         vector=vector,
                         payload={
                             "text": text,
@@ -115,7 +119,7 @@ class QdrantDbProvider(VectorDBInterface):
         if metadata is None:
             metadata = [None] * len(texts)
         if record_ids is None:
-            record_ids = [None] * len(texts)
+            record_ids = list(range(len(texts)))
 
         for i in range(0, len(texts), batch_size):
             batch_end = i + batch_size
@@ -125,7 +129,7 @@ class QdrantDbProvider(VectorDBInterface):
             batch_record_ids = record_ids[i:batch_end]
 
             batch_records = [
-                models.Point(
+                models.PointStruct(
                     id=batch_record_ids[x],
                     vector=batch_vectors[x],
                     payload={
@@ -140,9 +144,9 @@ class QdrantDbProvider(VectorDBInterface):
                 for x in range(len(batch_texts))
             ]
             try:
-                _ = self.client.upsert(
+                result = self.client.upsert(
                     collection_name=collection_name,
-                    records=batch_records,
+                    points=batch_records,
                 )
             except Exception as e:
                 self.logger.error(
@@ -153,6 +157,20 @@ class QdrantDbProvider(VectorDBInterface):
 
     def search_by_vector(self, collection_name: str, vector: list, limit: int):
         """Search for documents in a collection based on a query vector."""
-        return self.client.query_points(
+        result = self.client.query_points(
             collection_name=collection_name, query=vector, limit=limit
         )
+        if not result.points or len(result.points) == 0:
+            self.logger.warning(
+                f"No results found for query in collection {collection_name}"
+            )
+            return None
+        return [
+            RetrievedDocument(
+                **{
+                    "score": doc.score,
+                    "text": doc.payload["text"],
+                }
+            )
+            for doc in result.points
+        ]
