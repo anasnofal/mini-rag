@@ -14,16 +14,15 @@ class OpenAiEnums(Enum):
 
 
 class GeminiEnums(Enum):
-    SYSTEM = "system"
+    SYSTEM = "model"
     USER = "user"
     ASSISTANT = "assistant"
-    MODEL = "model"
 
 
 class CohereEnums(Enum):
-    SYSTEM = "SYSTEM"
-    USER = "USER"
-    ASSISTANT = "CHATBOT"
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
     DOCUMENT = "search_document"
     QUERY = "search_query"
 

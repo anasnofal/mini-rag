@@ -21,6 +21,7 @@ class GeminiProvider(LLMInterface):
         self.generation_model_id = None
         self.embedding_model_id = None
         self.embedding_size = None
+        self.enums = GeminiEnums
         self.logger = logging.getLogger(__name__)
 
     def set_generation_model(self, model_id: str):
@@ -65,10 +66,11 @@ class GeminiProvider(LLMInterface):
         chat_history.append(
             self.construct_prompt(prompt=prompt, role=GeminiEnums.USER.value)
         )
+
         response = self.client.models.generate_content(
             model=self.generation_model_id,
             contents=chat_history,
-            generation_config=types.GenerationConfig(
+            config=types.GenerateContentConfig(
                 max_output_tokens=max_output_tokens,
                 temperature=temperature,
             ),

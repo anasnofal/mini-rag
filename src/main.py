@@ -4,6 +4,7 @@ from pymongo import AsyncMongoClient as Client
 from helpers.config import get_settings
 from stores.llm.LLMProviderFactory import LLMProviderFactory
 from stores.vectordb.VectorDBproviderFactory import VectorDBProviderFactory
+from stores.llm.templates.template_parser import TemplateParser
 
 app = FastAPI()
 
@@ -24,11 +25,14 @@ async def startup_span():
     )
     app.vector_db_client = vector_db_provider_factory.create(settings.VECTOR_DB_BACKEND)
     app.vector_db_client.connect()
+    app.template_parser = TemplateParser(
+        language=settings.PRIMARY_LANGUAGE, default_language=settings.DEFAULT_LANGUAGE
+    )
 
 
 async def shutdown_span():
     await app.mongo_conn.close()
-    await app.vector_db_client.disconnect()
+    app.vector_db_client.disconnect()
 
 
 app.on_event("startup")(startup_span)

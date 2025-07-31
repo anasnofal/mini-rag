@@ -100,7 +100,7 @@ async def get_index_info(request: Request, project_id: str):
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
-            "signal": ResponseResult.Vector_db_collection_retrieved.value,
+            "signal": ResponseResult.VECTOR_DB_COLLECTION_RETRIEVED.value,
             "collection_info": collection_info,
         },
     )
@@ -122,6 +122,7 @@ async def search_index(
         vectordb_client=request.app.vector_db_client,
         generation_client=request.app.generation_client,
         embedding_client=request.app.embedding_client,
+        template_parser=request.app.template_parser,
     )
     search_results = nlp_controller.search_vector_db(
         project=project,
@@ -131,7 +132,52 @@ async def search_index(
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
-            "signal": ResponseResult.PROCESSING_SUCCESS.value,
+            "signal": ResponseResult.VECTOR_DB_SEARCH_SUCCESS.value,
             "search_results": [result.dict() for result in search_results],
+        },
+    )
+
+
+@nlp_router.post("/index/answer/{project_id}")
+async def answer_index(
+    request: Request, project_id: str, search_request: SearchRequest
+):
+    project_model = await ProjectModel.create_instance(request.app.db_client)
+    project = await project_model.get_project_or_create_one(project_id=project_id)
+
+    if not project:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"signal": ResponseResult.PROJECT_NOT_FOUND.value},
+        )
+    nlp_controller = NLPController(
+        vectordb_client=request.app.vector_db_client,
+        generation_client=request.app.generation_client,
+        embedding_client=request.app.embedding_client,
+        template_parser=request.app.template_parser,
+    )
+
+    answer, full_prompt, chat_history = nlp_controller.answer_rag_question(
+        project=project,
+        query=search_request.query,
+        limit=search_request.limit,
+    )
+
+    if not answer:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "signal": ResponseResult.RAG_ANSWER_ERROR.value,
+                "message": "No relevant documents found for the query.",
+            },
+        )
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "signal": ResponseResult.RAG_ANSWER_SUCCESS.value,
+            "answer": answer,
+            "full_prompt": full_prompt,
+            "chat_history": chat_history,
         },
     )

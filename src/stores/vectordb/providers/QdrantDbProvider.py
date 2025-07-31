@@ -31,7 +31,7 @@ class QdrantDbProvider(VectorDBInterface):
 
     def disconnect(self):
         """Close the connection to the Qdrant database."""
-        raise NotImplementedError("Disconnect method is not implemented for QdrantDb.")
+        self.client = None
 
     def is_collection_exist(self, collection_name: str) -> bool:
         """Check if a collection exists in the Qdrant database."""
