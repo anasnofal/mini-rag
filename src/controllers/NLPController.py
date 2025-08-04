@@ -1,4 +1,4 @@
-from models.db_schemes.data_chunk import DataChunk
+from models.db_schemes import DataChunk
 from .BaseController import BaseController
 from models.db_schemes import Project, retrieved_document
 from stores.llm.LLMEnums import DocumentTypeEnum

@@ -79,7 +79,9 @@ class GeminiProvider(LLMInterface):
         if not response or not response.text:
             self.logger.error("Failed to generate text.")
             return None
-        return response.text
+        response_text = response.__dict__
+        print(response_text)
+        return response_text.candidates[0].content.parts[0].text
 
     def construct_prompt(self, prompt: str, role: str):
         """
