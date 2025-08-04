@@ -128,4 +128,4 @@ class OpenAiProvider(LLMInterface):
         """
         Construct a prompt for the language model.
         """
-        return {"role": role, "content": self.process_text(prompt)}
+        return {"role": role, "content": prompt}

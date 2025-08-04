@@ -95,9 +95,7 @@ class GeminiProvider(LLMInterface):
             types.Content: A Content object with the specified role and a single Part containing the processed prompt text.
                 This object is intended to be used as input for the Gemini model's content generation methods.
         """
-        return types.Content(
-            role=role, parts=[types.Part(text=self.process_text(prompt))]
-        )
+        return types.Content(role=role, parts=[types.Part(text=prompt)])
 
     def embed_text(self, text: str, document_type: str) -> list:
         """Generate embeddings for the provided text."""
