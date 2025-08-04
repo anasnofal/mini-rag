@@ -12,3 +12,7 @@ cohere==5.16.1
 qdrant-client==1.15.0
 google-genai==1.27.0
 httpx==0.28.1
+SQLAlchemy==2.0.36
+asyncpg == 0.30.0
+alembic==1.14.0
+psycopg2-binary==2.9.10

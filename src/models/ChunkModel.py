@@ -20,7 +20,7 @@ class ChunkModel(BaseDataModel):
         result = await self.collection.insert_one(
             chunk.dict(by_alias=True, exclude_unset=True)
         )
-        chunk.id = result.inserted_id
+        chunk.chunk_id = result.inserted_id
         return chunk
 
     async def init_collection(self):

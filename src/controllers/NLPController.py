@@ -26,14 +26,14 @@ class NLPController(BaseController):
         """
         Reset the vector database collection by deleting and recreating it.
         """
-        collection_name = self.create_collection_name(project_id=project.id)
+        collection_name = self.create_collection_name(project_id=project.project_id)
         return self.vectordb_client.delete_collection(collection_name=collection_name)
 
     def get_vector_db_collection_info(self, project: Project):
         """
         Get information about the vector database collection.
         """
-        collection_name = self.create_collection_name(project_id=project.id)
+        collection_name = self.create_collection_name(project_id=project.project_id)
         collection_info = self.vectordb_client.get_collection_info(
             collection_name=collection_name
         )
@@ -50,7 +50,7 @@ class NLPController(BaseController):
         Index documents into the vector database collection.
         """
         # get collection name
-        collection_name = self.create_collection_name(project_id=project.id)
+        collection_name = self.create_collection_name(project_id=project.project_id)
 
         # manage items
         texts = [chunk.chunk_text for chunk in chunks]
@@ -83,7 +83,7 @@ class NLPController(BaseController):
         """
         Search the vector database collection for similar documents.
         """
-        collection_name = self.create_collection_name(project_id=project.id)
+        collection_name = self.create_collection_name(project_id=project.project_id)
         vector = self.embedding_client.embed_text(
             text=query, document_type=DocumentTypeEnum.QUERY.value
         )
