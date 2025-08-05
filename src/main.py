@@ -27,7 +27,9 @@ async def startup_span():
         app.db_engine, class_=AsyncSession, expire_on_commit=False
     )
     llm_provider_factory = LLMProviderFactory(settings)
-    vector_db_provider_factory = VectorDBProviderFactory(settings)
+    vector_db_provider_factory = VectorDBProviderFactory(
+        settings, db_client=app.db_client
+    )
 
     app.generation_client = llm_provider_factory.create(settings.GENERATION_BACKEND)
     app.generation_client.set_generation_model(settings.GENERATION_MODEL_ID)
@@ -37,7 +39,7 @@ async def startup_span():
         settings.EMBEDDING_MODEL_ID, settings.EMBEDDING_MODEL_SIZE
     )
     app.vector_db_client = vector_db_provider_factory.create(settings.VECTOR_DB_BACKEND)
-    app.vector_db_client.connect()
+    await app.vector_db_client.connect()
     app.template_parser = TemplateParser(
         language=settings.PRIMARY_LANGUAGE, default_language=settings.DEFAULT_LANGUAGE
     )

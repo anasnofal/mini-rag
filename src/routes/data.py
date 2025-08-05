@@ -1,3 +1,6 @@
+from curses import nl
+from gc import collect
+from token import NL
 from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request
 from fastapi.responses import JSONResponse
 from helpers.config import get_settings, Settings
@@ -6,6 +9,8 @@ import os
 import aiofiles
 from models import ResponseResult, ProcessingEnum, AssetTypeEnum
 import logging
+from controllers import NLPController
+from routes import nlp
 from .schemes.data import ProcessRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
@@ -91,6 +96,13 @@ async def process_endpoint(
     project = await project_model.get_project_or_create_one(project_id=project_id)
     asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
 
+    nlp_controller = NLPController(
+        vectordb_client=request.app.vector_db_client,
+        generation_client=request.app.generation_client,
+        embedding_client=request.app.embedding_client,
+        template_parser=request.app.template_parser,
+    )
+
     project_file_ids = {}
 
     if process_request.file_id:
@@ -124,6 +136,7 @@ async def process_endpoint(
     no_files = 0
     if do_reset == 1:
         _ = await chunk_model.delete_chunks_by_project_id(project_id=project.project_id)
+        _ = await nlp_controller.reset_vector_db_collection(project=project)
 
     for asset_id, file_id in project_file_ids.items():
 

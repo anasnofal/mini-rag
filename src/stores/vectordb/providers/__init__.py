@@ -1,1 +1,2 @@
 from stores.vectordb.providers.QdrantDbProvider import QdrantDbProvider
+from stores.vectordb.providers.PGVectorProvider import PGVectorProvider

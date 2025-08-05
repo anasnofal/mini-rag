@@ -1,8 +1,10 @@
+from urllib import response
 from ..LLMInterface import LLMInterface
 from ..LLMEnums import DocumentTypeEnumGemini, LLMEnums, GeminiEnums, DocumentTypeEnum
 from google import genai
 from google.genai import types
 import logging
+from typing import Union, List
 
 
 class GeminiProvider(LLMInterface):
@@ -97,7 +99,7 @@ class GeminiProvider(LLMInterface):
         """
         return types.Content(role=role, parts=[types.Part(text=prompt)])
 
-    def embed_text(self, text: str, document_type: str) -> list:
+    def embed_text(self, text: Union[str, List[str]], document_type: str) -> list:
         """Generate embeddings for the provided text."""
         if not self.client:
             self.logger.error("Gemini client is not initialized.")
@@ -109,12 +111,11 @@ class GeminiProvider(LLMInterface):
             document_type = DocumentTypeEnumGemini.RETRIEVAL_DOCUMENT.value
         response = self.client.models.embed_content(
             model=self.embedding_model_id,
-            contents=self.process_text(text),
+            contents=text,
             config=types.EmbeddingConfig(task_type=document_type),
         )
 
         if not response or not response.embeddings or len(response.embeddings) == 0:
             self.logger.error("Failed to get embedding from Gemini.")
             return None
-
-        return response.embeddings[0].values
+        return [f.values for f in response.embeddings]

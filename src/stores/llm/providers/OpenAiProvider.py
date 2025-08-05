@@ -1,9 +1,11 @@
+import re
 import httpx
 from routes import base
 from ..LLMInterface import LLMInterface
 from ..LLMEnums import LLMEnums, OpenAiEnums
 from openai import OpenAI
 import logging
+from typing import Union, List
 
 
 class OpenAiProvider(LLMInterface):
@@ -103,7 +105,11 @@ class OpenAiProvider(LLMInterface):
 
         return response.choices[0].message.content
 
-    def embed_text(self, text: str, document_type: str = None) -> list:
+    def embed_text(
+        self, text: Union[str, List[str]], document_type: str = None
+    ) -> list:
+        if isinstance(text, str):
+            text = [text]
         if not self.client:
             self.logger.error("OpenAI client is not initialized.")
             return None
@@ -121,8 +127,7 @@ class OpenAiProvider(LLMInterface):
         ):
             self.logger.error("Failed to get embedding from OpenAI.")
             return None
-
-        return response.data[0].embedding
+        return [f.embedding for f in response.data]
 
     def construct_prompt(self, prompt: str, role: str) -> dict:
         """

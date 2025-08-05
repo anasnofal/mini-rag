@@ -20,26 +20,28 @@ class NLPController(BaseController):
         self.template_parser = template_parser
 
     def create_collection_name(self, project_id: str):
-        return f"collection{project_id}".strip()
+        return f"collection_{self.vectordb_client.default_vector_size}_{project_id}".strip()
 
-    def reset_vector_db_collection(self, project: Project):
+    async def reset_vector_db_collection(self, project: Project):
         """
         Reset the vector database collection by deleting and recreating it.
         """
         collection_name = self.create_collection_name(project_id=project.project_id)
-        return self.vectordb_client.delete_collection(collection_name=collection_name)
+        return await self.vectordb_client.delete_collection(
+            collection_name=collection_name
+        )
 
-    def get_vector_db_collection_info(self, project: Project):
+    async def get_vector_db_collection_info(self, project: Project):
         """
         Get information about the vector database collection.
         """
         collection_name = self.create_collection_name(project_id=project.project_id)
-        collection_info = self.vectordb_client.get_collection_info(
+        collection_info = await self.vectordb_client.get_collection_info(
             collection_name=collection_name
         )
         return json.loads(json.dumps(collection_info, default=lambda o: o.__dict__))
 
-    def index_vector_db(
+    async def index_vector_db(
         self,
         project: Project,
         chunks: list[DataChunk],
@@ -55,22 +57,19 @@ class NLPController(BaseController):
         # manage items
         texts = [chunk.chunk_text for chunk in chunks]
         metadata = [chunk.chunk_metadata for chunk in chunks]
-        vectors = [
-            self.embedding_client.embed_text(
-                text=text, document_type=DocumentTypeEnum.DOCUMENT.value
-            )
-            for text in texts
-        ]
+        vectors = self.embedding_client.embed_text(
+            text=texts, document_type=DocumentTypeEnum.DOCUMENT.value
+        )
 
         # create collection if it does not exist
-        _ = self.vectordb_client.create_collection(
+        _ = await self.vectordb_client.create_collection(
             collection_name=collection_name,
-            embedding_size=self.embedding_client.embedding_size,
+            embedding_dimension=self.embedding_client.embedding_size,
             do_reset=do_reset,
         )
         # insert items into the collection
 
-        result = self.vectordb_client.insert_many(
+        result = await self.vectordb_client.insert_many(
             collection_name=collection_name,
             texts=texts,
             metadata=metadata,
@@ -79,31 +78,36 @@ class NLPController(BaseController):
         )
         return True
 
-    def search_vector_db(self, project: Project, query: str, limit: int = 5):
+    async def search_vector_db(self, project: Project, query: str, limit: int = 5):
         """
         Search the vector database collection for similar documents.
         """
+        query_vector = None
         collection_name = self.create_collection_name(project_id=project.project_id)
-        vector = self.embedding_client.embed_text(
+        vectors = self.embedding_client.embed_text(
             text=query, document_type=DocumentTypeEnum.QUERY.value
         )
-        if not vector:
-            raise ValueError("The vector for the query is empty.")
-
-        search_results = self.vectordb_client.search_by_vector(
-            collection_name=collection_name, vector=vector, limit=limit
+        if not vectors or len(vectors) == 0:
+            return False
+        if isinstance(vectors, list) and len(vectors) > 0:
+            query_vector = vectors[0]
+        if not query_vector:
+            self.logger.error("Failed to embed query text.")
+            return False
+        search_results = await self.vectordb_client.search_by_vector(
+            collection_name=collection_name, vector=query_vector, limit=limit
         )
         if not search_results:
             return False
         return search_results
 
-    def answer_rag_question(self, project: Project, query: str, limit: int = 5):
+    async def answer_rag_question(self, project: Project, query: str, limit: int = 5):
         """
         Answer a question using the RAG approach.
         """
 
         answer, full_prompt, chat_history = None, None, None
-        retrieved_document = self.search_vector_db(
+        retrieved_document = await self.search_vector_db(
             project=project, query=query, limit=limit
         )
         if not retrieved_document:
