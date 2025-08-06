@@ -65,25 +65,27 @@ class GeminiProvider(LLMInterface):
             if max_output_tokens is not None
             else self.default_output_max_tokens
         )
+
         chat_history.append(
             self.construct_prompt(prompt=prompt, role=GeminiEnums.USER.value)
         )
-
+        sdk_contents = [
+            types.Content(role=msg["role"], parts=[types.Part(text=msg["content"])])
+            for msg in chat_history
+        ]
         response = self.client.models.generate_content(
             model=self.generation_model_id,
-            contents=chat_history,
+            contents=sdk_contents,
             config=types.GenerateContentConfig(
                 max_output_tokens=max_output_tokens,
                 temperature=temperature,
             ),
         )
 
-        if not response or not response.text:
+        if not response:
             self.logger.error("Failed to generate text.")
             return None
-        response_text = response.__dict__
-        print(response_text)
-        return response_text.candidates[0].content.parts[0].text
+        return response.candidates[0].content.parts[0].text
 
     def construct_prompt(self, prompt: str, role: str):
         """
@@ -97,7 +99,7 @@ class GeminiProvider(LLMInterface):
             types.Content: A Content object with the specified role and a single Part containing the processed prompt text.
                 This object is intended to be used as input for the Gemini model's content generation methods.
         """
-        return types.Content(role=role, parts=[types.Part(text=prompt)])
+        return {"role": role, "content": prompt}
 
     def embed_text(self, text: Union[str, List[str]], document_type: str) -> list:
         """Generate embeddings for the provided text."""

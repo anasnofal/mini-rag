@@ -138,8 +138,8 @@ class NLPController(BaseController):
         ]
         full_prompt = "\n\n".join([document_prompt, footer_prompt])
 
-        # Generate an answer using the generation client
         answer = self.generation_client.generate_text(
             prompt=full_prompt, chat_history=chat_history
         )
+
         return answer, full_prompt, chat_history
