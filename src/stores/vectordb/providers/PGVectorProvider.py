@@ -1,8 +1,3 @@
-from itertools import count
-from operator import index
-import re
-
-from regex import F
 from ..VectorDBInterface import VectorDBInterface
 from ..VectorDBEnums import (
     DistanceMetricEnums,
@@ -44,11 +39,20 @@ class PGVectorProvider(VectorDBInterface):
         """Connect to the PostgreSQL database."""
         async with self.db_client() as session:
             async with session.begin():
-                await session.execute(
-                    sql_text("CREATE EXTENSION IF NOT EXISTS vector;")
-                )
-
-        await session.commit()
+                try:
+                    await session.execute(sql_text("CREATE EXTENSION vector;"))
+                    await session.commit()
+                except Exception as e:
+                    # Only ignore the error if it's about the extension already existing
+                    if "pg_extension_name_index" in str(e) or "already exists" in str(
+                        e
+                    ):
+                        self.logger.warning(
+                            "Vector extension already exists, skipping creation."
+                        )
+                    else:
+                        self.logger.error(f"Error ensuring vector extension: {e}")
+                        raise
 
     def disconnect(self):
         pass
