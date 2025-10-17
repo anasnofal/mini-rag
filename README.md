@@ -108,9 +108,7 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 5000
 
 A ready-to-use Postman collection is included:
 
-```
-src/assets/mini-rag-app.postman_collection.json
-```
+[src/assets/mini-rag-app.postman_collection.json](src/assets/mini-rag-app.postman_collection.json)
 
 Import it into Postman to test endpoints quickly.
 
