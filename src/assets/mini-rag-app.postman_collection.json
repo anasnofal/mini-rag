@@ -1,0 +1,144 @@
+{
+	"info": {
+		"_postman_id": "693edee8-7875-4980-af5f-bc2492bcf06d",
+		"name": "mini-rag-app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "46313999",
+		"_collection_link": "https://anasnoufal.postman.co/workspace/Anas-Noufal's-Workspace~5dce61fe-0cdb-4161-865a-af3b232c4c03/collection/46313999-693edee8-7875-4980-af5f-bc2492bcf06d?action=share&source=collection_link&creator=46313999"
+	},
+	"item": [
+		{
+			"name": "welcome",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{api}}/api/v1"
+			},
+			"response": []
+		},
+		{
+			"name": "UploadFile",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/anas/Downloads/Message.pdf"
+						}
+					]
+				},
+				"url": "{{api}}/api/v1/data/upload/1"
+			},
+			"response": []
+		},
+		{
+			"name": "process",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"chunk_size\":400,\n    \"overlap_size\":20,\n    \"do_reset\":1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{api}}/api/v1/data/process/1"
+			},
+			"response": []
+		},
+		{
+			"name": "nlp-index-push",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"do_reset\": 1\n}"
+				},
+				"url": "{{api}}/api/v1/nlp/index/push/1"
+			},
+			"response": []
+		},
+		{
+			"name": "get-info-nlp",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{api}}/api/v1/nlp/index/info/4"
+			},
+			"response": []
+		},
+		{
+			"name": "nlp-index-search",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\":\"good c++ skills and studied mechatronics \",\n    \"limit\":5\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{api}}/api/v1/nlp/index/search/1"
+			},
+			"response": []
+		},
+		{
+			"name": "nlp-rag-answer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\":\" what is rag \",\n    \"limit\" : 5\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{api}}/api/v1/nlp/index/answer/2"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "api",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		}
+	]
+}
