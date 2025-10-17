@@ -1,5 +1,5 @@
 env/.env.*
-!env/.env.example.*
-/minirag/alembic.ini
+!/env/.env.example.*
+minirag/alembic.ini
 !/minirag/alembic.example.ini
 prometheus/data/wal

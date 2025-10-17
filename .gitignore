@@ -122,9 +122,8 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
 venv/
-ENV/
+!/docker/env/.env.example.*
 env.bak/
 venv.bak/
 
